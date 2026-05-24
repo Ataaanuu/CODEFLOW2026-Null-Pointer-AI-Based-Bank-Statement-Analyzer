@@ -1,0 +1,9 @@
+Date,Description,Debit,Credit,Balance
+01-07-2026,Opening Balance,,25000,25000
+02-07-2026,Mobile Recharge,299,,24701
+03-07-2026,Salary Credit,,30000,54701
+04-07-2026,Uber Ride,450,,54251
+05-07-2026,Medicine Purchase,780,,53471
+06-07-2026,ATM Withdrawal,3000,,50471
+07-07-2026,Cash Deposit,,4000,54471
+08-07-2026,Movie Tickets,1200,,53271

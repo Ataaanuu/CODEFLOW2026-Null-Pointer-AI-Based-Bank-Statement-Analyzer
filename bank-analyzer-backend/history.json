@@ -1,0 +1,86 @@
+[
+  {
+    "id": "1779618682860",
+    "filename": "test-statement.csv",
+    "analyzedAt": "2026-05-24T10:31:22.860Z",
+    "data": {
+      "totalIn": 27000,
+      "totalOut": 15499,
+      "balance": 11501,
+      "categories": [
+        {
+          "name": "Food",
+          "amount": 1300
+        },
+        {
+          "name": "Shopping",
+          "amount": 1200
+        },
+        {
+          "name": "Rent",
+          "amount": 8000
+        },
+        {
+          "name": "Utility Bills",
+          "amount": 800
+        },
+        {
+          "name": "ATM Withdrawal",
+          "amount": 2000
+        },
+        {
+          "name": "Mobile Recharge",
+          "amount": 199
+        }
+      ],
+      "unusual": "No unusual transactions found",
+      "tips": [
+        "Track your expenses regularly",
+        "Create a budget and stick to it",
+        "Cut back on unnecessary shopping",
+        "Use cashback and rewards on debit/credit cards",
+        "Save a portion of your income in a separate account"
+      ]
+    }
+  },
+  {
+    "id": "1779618739867",
+    "filename": "CSV_A.csv",
+    "analyzedAt": "2026-05-24T10:32:19.867Z",
+    "data": {
+      "totalIn": 47000,
+      "totalOut": 14650,
+      "balance": 32350,
+      "categories": [
+        {
+          "name": "Food",
+          "amount": 2750
+        },
+        {
+          "name": "Shopping",
+          "amount": 3200
+        },
+        {
+          "name": "Fuel",
+          "amount": 2500
+        },
+        {
+          "name": "Utilities",
+          "amount": 1200
+        },
+        {
+          "name": "Cash Withdrawal",
+          "amount": 5000
+        }
+      ],
+      "unusual": "ATM Withdrawal of 5000 on 05-06-2026 seems unusual",
+      "tips": [
+        "Create a budget to track your expenses",
+        "Use the 50/30/20 rule for saving",
+        "Avoid impulse purchases",
+        "Use cashback and rewards on credit cards",
+        "Set aside a fixed amount for emergency funds"
+      ]
+    }
+  }
+]
