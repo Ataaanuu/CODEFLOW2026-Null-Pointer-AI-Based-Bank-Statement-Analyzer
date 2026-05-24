@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type View = "landing" | "analyzer" | "history";
 
@@ -24,49 +24,29 @@ interface HistoryEntry {
   data: AnalysisData;
 }
 
+interface Message {
+  role: "user" | "ai";
+  text: string;
+}
+
 const colors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444"];
 
-/* ─────────────────────────────────── SVG Icons ── */
 const Icons = {
-  upload: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-  ),
-  file: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
-    </svg>
-  ),
-  folder: (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-    </svg>
-  ),
-  chevronDown: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  ),
-  close: (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  ),
-  arrow: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-    </svg>
-  ),
-  speed:    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
-  chart:    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-  search:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-  bulb:     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>,
-  history:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></svg>,
-  lock:     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  upload: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+  file: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  folder: <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>,
+  chevronDown: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  close: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  arrow: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  speed: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
+  chart: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  search: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  bulb: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>,
+  history: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></svg>,
+  lock: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  chat: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
 };
 
-/* ─────────────────────────── Shared Results Block ── */
 function AnalysisResult({ data }: { data: AnalysisData }) {
   return (
     <div className="space-y-6">
@@ -97,9 +77,7 @@ function AnalysisResult({ data }: { data: AnalysisData }) {
                   <span className="text-lg font-bold text-white">{cat.name}</span>
                   <div className="flex items-center gap-4">
                     <span style={{ color: "#9ca3af" }} className="text-lg">₹{cat.amount.toLocaleString()}</span>
-                    <span style={{ background: `${color}20`, color, border: `1px solid ${color}50` }} className="text-sm px-3 py-1 rounded-full font-black">
-                      {pct}%
-                    </span>
+                    <span style={{ background: `${color}20`, color, border: `1px solid ${color}50` }} className="text-sm px-3 py-1 rounded-full font-black">{pct}%</span>
                   </div>
                 </div>
                 <div style={{ background: "#1a1a2e" }} className="w-full rounded-full h-4">
@@ -132,30 +110,120 @@ function AnalysisResult({ data }: { data: AnalysisData }) {
   );
 }
 
-/* ──────────────────────────────── Landing Page ── */
+function ChatBox({ data }: { data: AnalysisData }) {
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "ai", text: "Hi! I have analyzed your statement. Ask me anything about your finances!" }
+  ]);
+  const [question, setQuestion] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleChat = async () => {
+    if (!question.trim()) return;
+    const userMsg = question.trim();
+    setQuestion("");
+    setMessages(prev => [...prev, { role: "user", text: userMsg }]);
+    setChatLoading(true);
+    try {
+      const res = await fetch("http://localhost:3001/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: userMsg, data }),
+      });
+      const json = await res.json();
+      setMessages(prev => [...prev, { role: "ai", text: json.answer }]);
+    } catch {
+      setMessages(prev => [...prev, { role: "ai", text: "Sorry, could not get a response." }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ background: "#13131a", border: "1px solid #1e1e30" }} className="rounded-3xl p-8">
+      <div className="flex items-center gap-3 mb-6">
+        <span style={{ color: "#818cf8" }}>{Icons.chat}</span>
+        <p style={{ color: "#4b5563" }} className="text-sm font-bold uppercase tracking-widest">
+          Ask About Your Statement
+        </p>
+      </div>
+
+      <div style={{ background: "#0a0a0f", border: "1px solid #1a1a2e", height: "320px" }} className="rounded-2xl p-6 overflow-y-auto mb-6 space-y-4">
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div
+              style={{
+                background: msg.role === "user" ? "linear-gradient(135deg, #4f46e5, #7c3aed)" : "#1e1e30",
+                color: "#fff",
+                maxWidth: "75%",
+              }}
+              className="px-5 py-3 rounded-2xl text-sm leading-7"
+            >
+              {msg.text}
+            </div>
+          </div>
+        ))}
+        {chatLoading && (
+          <div className="flex justify-start">
+            <div style={{ background: "#1e1e30" }} className="px-5 py-4 rounded-2xl">
+              <span className="flex gap-1">
+                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "300ms" }}></span>
+              </span>
+            </div>
+          </div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+
+      <div className="flex gap-3">
+        <input
+          type="text"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleChat()}
+          placeholder="e.g. Where am I overspending?"
+          style={{ background: "#0d0d14", border: "1px solid #2a2a40", color: "#fff" }}
+          className="flex-1 px-5 py-4 rounded-2xl text-base outline-none placeholder-gray-700"
+        />
+        <button
+          onClick={handleChat}
+          disabled={chatLoading || !question.trim()}
+          style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)" }}
+          className="px-8 py-4 rounded-2xl font-black text-white hover:opacity-90 disabled:opacity-50 transition-all"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LandingPage({ setView }: { setView: (v: View) => void }) {
   const features = [
-    { icon: Icons.speed,   title: "Instant Analysis",    desc: "Upload your CSV and get a complete financial breakdown in under 10 seconds." },
-    { icon: Icons.chart,   title: "Smart Categorisation", desc: "Transactions are automatically grouped into categories like Food, Rent, and Shopping." },
-    { icon: Icons.search,  title: "Anomaly Detection",    desc: "The AI flags high-value or irregular transactions so nothing slips past you." },
-    { icon: Icons.bulb,    title: "Savings Tips",         desc: "Receive five personalised recommendations based on your actual spending behaviour." },
-    { icon: Icons.history, title: "Analysis History",     desc: "Every report is saved automatically so you can revisit and compare past statements." },
-    { icon: Icons.lock,    title: "Private by Design",    desc: "Files are processed entirely on your local server and deleted immediately after analysis." },
+    { icon: Icons.speed,   title: "Instant Analysis",      desc: "Upload your CSV and get a complete financial breakdown in under 10 seconds." },
+    { icon: Icons.chart,   title: "Smart Categorisation",  desc: "Transactions are automatically grouped into categories like Food, Rent, and Shopping." },
+    { icon: Icons.search,  title: "Anomaly Detection",     desc: "The AI flags high-value or irregular transactions so nothing slips past you." },
+    { icon: Icons.bulb,    title: "Savings Tips",          desc: "Receive five personalised recommendations based on your actual spending behaviour." },
+    { icon: Icons.history, title: "Analysis History",      desc: "Every report is saved automatically so you can revisit and compare past statements." },
+    { icon: Icons.lock,    title: "Private by Design",     desc: "Files are processed on your local server and deleted immediately after analysis." },
   ];
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-16">
-
-      {/* Hero */}
       <div className="text-center mb-16">
-       
         <h1 className="text-6xl font-black text-white mb-5 leading-tight">
           Know exactly where
           <br />
           <span style={{ color: "#818cf8" }}>your money goes.</span>
         </h1>
         <p style={{ color: "#6b7280" }} className="text-xl max-w-xl mx-auto leading-8">
-          Upload any bank statement in CSV format and receive a detailed AI-powered breakdown — categories, anomalies, and savings tips — in seconds.
+          Upload any bank statement in CSV format and receive a detailed AI-powered breakdown in seconds.
         </p>
         <div className="flex items-center justify-center gap-4 mt-10">
           <button
@@ -176,13 +244,12 @@ function LandingPage({ setView }: { setView: (v: View) => void }) {
         </div>
       </div>
 
-      {/* Stats strip */}
       <div style={{ background: "#13131a", border: "1px solid #1e1e30" }} className="rounded-3xl p-8 mb-8">
-        <div className="grid grid-cols-3" style={{ gap: 0 }}>
+        <div className="grid grid-cols-3">
           {[
-            { value: "< 10s",  label: "Analysis Time",       color: "#10b981" },
-            { value: "100%",   label: "Private & Local",      color: "#818cf8" },
-            { value: "5+",     label: "Spending Categories",  color: "#f59e0b" },
+            { value: "< 10s", label: "Analysis Time",      color: "#10b981" },
+            { value: "100%",  label: "Private & Local",    color: "#818cf8" },
+            { value: "5+",    label: "Spending Categories", color: "#f59e0b" },
           ].map((s, i) => (
             <div key={i} style={{ borderRight: i < 2 ? "1px solid #1e1e30" : "none" }} className="text-center px-8">
               <p style={{ color: s.color, fontSize: "34px", fontWeight: 900, lineHeight: 1.15 }}>{s.value}</p>
@@ -192,7 +259,6 @@ function LandingPage({ setView }: { setView: (v: View) => void }) {
         </div>
       </div>
 
-      {/* Features grid */}
       <div style={{ background: "#13131a", border: "1px solid #1e1e30" }} className="rounded-3xl p-10 mb-8">
         <p style={{ color: "#4b5563" }} className="text-sm font-bold uppercase tracking-widest mb-8">Platform Capabilities</p>
         <div className="grid grid-cols-3 gap-5">
@@ -206,7 +272,6 @@ function LandingPage({ setView }: { setView: (v: View) => void }) {
         </div>
       </div>
 
-      {/* CTA */}
       <div style={{ background: "linear-gradient(135deg, #1e1b4b, #2d1b69)", border: "1px solid #4338ca44" }} className="rounded-3xl p-10 text-center">
         <p style={{ color: "#a78bfa" }} className="text-xs font-bold uppercase tracking-widest mb-4">Ready to Begin</p>
         <h2 className="text-4xl font-black text-white mb-3">Upload your first statement</h2>
@@ -224,7 +289,6 @@ function LandingPage({ setView }: { setView: (v: View) => void }) {
   );
 }
 
-/* ──────────────────────────────── Analyzer Page ── */
 function AnalyzerPage() {
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<AnalysisData | null>(null);
@@ -306,12 +370,16 @@ function AnalyzerPage() {
         </div>
       )}
 
-      {data && <AnalysisResult data={data} />}
+      {data && (
+        <div className="space-y-6">
+          <AnalysisResult data={data} />
+          <ChatBox data={data} />
+        </div>
+      )}
     </div>
   );
 }
 
-/* ──────────────────────────────── History Page ── */
 function HistoryPage() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -367,9 +435,7 @@ function HistoryPage() {
             {Icons.folder}
           </div>
           <p style={{ color: "#6b7280", fontSize: "18px", fontWeight: 700 }}>No analyses found</p>
-          <p style={{ color: "#374151", fontSize: "14px", marginTop: "8px" }}>
-            Run your first analysis to see results here.
-          </p>
+          <p style={{ color: "#374151", fontSize: "14px", marginTop: "8px" }}>Run your first analysis to see results here.</p>
         </div>
       )}
 
@@ -449,7 +515,6 @@ function HistoryPage() {
   );
 }
 
-/* ──────────────────────────────────── Navbar ── */
 function Navbar({ view, setView }: { view: View; setView: (v: View) => void }) {
   return (
     <nav style={{ borderBottom: "1px solid #1a1a2e" }} className="px-10 py-5 flex items-center justify-between">
@@ -487,7 +552,6 @@ function Navbar({ view, setView }: { view: View; setView: (v: View) => void }) {
   );
 }
 
-/* ─────────────────────────────────────── Root ── */
 export default function Home() {
   const [view, setView] = useState<View>("landing");
 
