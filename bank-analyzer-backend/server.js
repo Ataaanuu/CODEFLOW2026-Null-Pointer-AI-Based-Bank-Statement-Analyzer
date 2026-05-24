@@ -14,7 +14,6 @@ app.use(express.json());
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const upload = multer({ dest: 'uploads/' });
 
-/* ── History persistence ───────────────────────── */
 const HISTORY_FILE = path.join(__dirname, 'history.json');
 
 function loadHistory() {
@@ -36,14 +35,11 @@ function saveHistory(history) {
   }
 }
 
-/* ── GET /history ──────────────────────────────── */
 app.get('/history', (req, res) => {
   const history = loadHistory();
-  // Return newest first
   res.json({ success: true, history: history.reverse() });
 });
 
-/* ── DELETE /history/:id ───────────────────────── */
 app.delete('/history/:id', (req, res) => {
   const history = loadHistory();
   const updated = history.filter(entry => entry.id !== req.params.id);
@@ -51,7 +47,6 @@ app.delete('/history/:id', (req, res) => {
   res.json({ success: true });
 });
 
-/* ── POST /analyze ─────────────────────────────── */
 app.post('/analyze', upload.single('statement'), (req, res) => {
   const filePath = req.file.path;
   const originalName = req.file.originalname;
@@ -65,7 +60,6 @@ app.post('/analyze', upload.single('statement'), (req, res) => {
       const transactionText = transactions
         .map(t => Object.values(t).join(', '))
         .join('\n');
-
       const csvData = `Headers: ${headers}\n${transactionText}`;
 
       try {
@@ -102,7 +96,6 @@ ${csvData}`
 
         const json = JSON.parse(response.choices[0].message.content);
 
-        // Save to history
         const history = loadHistory();
         const entry = {
           id: Date.now().toString(),
@@ -113,9 +106,7 @@ ${csvData}`
         history.push(entry);
         saveHistory(history);
 
-        // Clean up uploaded file
         fs.unlink(filePath, () => {});
-
         res.json({ success: true, data: json });
       } catch (e) {
         console.error('Analysis error:', e.message);
@@ -123,6 +114,30 @@ ${csvData}`
       }
     })
     .on('error', () => res.status(500).json({ error: 'Could not read file' }));
+});
+
+app.post('/chat', async (req, res) => {
+  const { question, data } = req.body;
+  try {
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{
+        role: 'user',
+        content: `You are a friendly financial assistant. The user has this bank statement analysis:
+Total Income: ₹${data.totalIn}
+Total Expenses: ₹${data.totalOut}
+Net Balance: ₹${data.balance}
+Spending Categories: ${data.categories.map(c => `${c.name}: ₹${c.amount}`).join(', ')}
+Unusual Transactions: ${data.unusual}
+
+Answer this in simple friendly language in 2-3 sentences:
+${question}`
+      }]
+    });
+    res.json({ answer: response.choices[0].message.content });
+  } catch (e) {
+    res.json({ answer: "Sorry, could not get a response. Try again." });
+  }
 });
 
 app.listen(3001, () => console.log('Backend running on http://localhost:3001'));

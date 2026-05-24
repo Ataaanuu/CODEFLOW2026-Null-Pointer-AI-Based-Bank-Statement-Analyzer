@@ -82,5 +82,133 @@
         "Set aside a fixed amount for emergency funds"
       ]
     }
+  },
+  {
+    "id": "1779639458949",
+    "filename": "CSV_A.csv",
+    "analyzedAt": "2026-05-24T16:17:38.949Z",
+    "data": {
+      "totalIn": 47000,
+      "totalOut": 14550,
+      "balance": 32450,
+      "categories": [
+        {
+          "name": "Food",
+          "amount": 3750
+        },
+        {
+          "name": "Shopping",
+          "amount": 3200
+        },
+        {
+          "name": "Fuel",
+          "amount": 2500
+        },
+        {
+          "name": "Utilities",
+          "amount": 1200
+        },
+        {
+          "name": "Cash Withdrawal",
+          "amount": 5000
+        }
+      ],
+      "unusual": "No unusual transactions found",
+      "tips": [
+        "Create a budget to track your expenses",
+        "Prioritize needs over wants to reduce unnecessary spending",
+        "Use cashback or rewards credit cards for daily purchases",
+        "Set aside a portion of your income for emergency funds",
+        "Avoid making impulse purchases to save money"
+      ]
+    }
+  },
+  {
+    "id": "1779639900754",
+    "filename": "CSV_A.csv",
+    "analyzedAt": "2026-05-24T16:25:00.755Z",
+    "data": {
+      "totalIn": 47000,
+      "totalOut": 14650,
+      "balance": 32350,
+      "categories": [
+        {
+          "name": "Food",
+          "amount": 3750
+        },
+        {
+          "name": "Rent",
+          "amount": 0
+        },
+        {
+          "name": "Shopping",
+          "amount": 3200
+        },
+        {
+          "name": "Transport",
+          "amount": 2500
+        },
+        {
+          "name": "Utilities",
+          "amount": 1200
+        },
+        {
+          "name": "ATM Withdrawal",
+          "amount": 5000
+        }
+      ],
+      "unusual": "ATM Withdrawal of 5000 on 05-06-2026 seems unusual",
+      "tips": [
+        "Create a budget to track your expenses",
+        "Use the 50/30/20 rule for allocation of income",
+        "Avoid impulse purchases",
+        "Consider using cashback or rewards credit cards",
+        "Set aside a portion of your income for emergency funds"
+      ]
+    }
+  },
+  {
+    "id": "1779642960279",
+    "filename": "CSV_A.csv",
+    "analyzedAt": "2026-05-24T17:16:00.279Z",
+    "data": {
+      "totalIn": 47000,
+      "totalOut": 14650,
+      "balance": 32350,
+      "categories": [
+        {
+          "name": "Food",
+          "amount": 2750
+        },
+        {
+          "name": "Rent",
+          "amount": 0
+        },
+        {
+          "name": "Shopping",
+          "amount": 3200
+        },
+        {
+          "name": "Transportation",
+          "amount": 2500
+        },
+        {
+          "name": "Utilities",
+          "amount": 1200
+        },
+        {
+          "name": "ATM Withdrawal",
+          "amount": 5000
+        }
+      ],
+      "unusual": "ATM Withdrawal of 5000 on 05-06-2026 seems unusual",
+      "tips": [
+        "Create a budget to track expenses",
+        "Prioritize needs over wants",
+        "Use cashback or rewards on credit cards",
+        "Set aside 10% of income for savings",
+        "Avoid impulse purchases"
+      ]
+    }
   }
 ]
